@@ -1,4 +1,5 @@
 import { Analytics } from '@vercel/analytics/next'
+import Script from 'next/script'
 import type { Metadata, Viewport } from 'next'
 import { Fraunces, Inter } from 'next/font/google'
 import { SiteHeader } from '@/components/site-header'
@@ -57,10 +58,24 @@ export default function RootLayout({
   return (
     <html lang="en" className={`light ${inter.variable} ${fraunces.variable}`}>
       <body className="antialiased font-sans">
-        <SiteHeader />
-        <main>{children}</main>
-        <SiteFooter />
-        {process.env.NODE_ENV === 'production' && <Analytics />}
+  <Script
+    src="https://www.googletagmanager.com/gtag/js?id=G-G0HCN29DDV"
+    strategy="afterInteractive"
+  />
+
+  <Script id="google-analytics" strategy="afterInteractive">
+    {`
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-G0HCN29DDV');
+    `}
+  </Script>
+
+  <SiteHeader />
+  <main>{children}</main>
+  <SiteFooter />
+  {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
   )
