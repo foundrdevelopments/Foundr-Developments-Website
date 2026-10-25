@@ -44,7 +44,21 @@ export function ContactForm() {
       if (!response.ok) {
         throw new Error("Submission failed")
       }
+      
+if (typeof window !== "undefined") {
+  const gtag = (
+    window as Window & {
+      gtag?: (...args: unknown[]) => void
+    }
+  ).gtag
 
+  if (typeof gtag === "function") {
+    gtag("event", "generate_lead", {
+      lead_source: "contact_form",
+    })
+  }
+}
+      
       setSubmitted(true)
     } catch {
       setSubmitError(
