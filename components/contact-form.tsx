@@ -8,10 +8,51 @@ const services = ["Develop", "Refine", "Protect", "Not sure yet"]
 export function ContactForm() {
   const [submitted, setSubmitted] = useState(false)
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState("")
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    // Placeholder: wire this up to a backend / email service when ready.
-    setSubmitted(true)
+
+    if (submitting) return
+
+    setSubmitting(true)
+    setSubmitError("")
+
+    try {
+      const formData = new FormData(e.currentTarget)
+
+      const name = String(formData.get("name") || "")
+      const email = String(formData.get("email") || "")
+      const phone = String(formData.get("phone") || "")
+      const service = String(formData.get("service") || "")
+      const message = String(formData.get("message") || "")
+
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          message: `Service: ${service || "Not specified"}\n\n${message}`,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Submission failed")
+      }
+
+      setSubmitted(true)
+    } catch {
+      setSubmitError(
+        "We couldn't send your enquiry. Please try again or contact us directly."
+      )
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   if (submitted) {
@@ -22,8 +63,7 @@ export function ContactForm() {
         </span>
         <h3 className="mt-6 text-2xl">Thank you.</h3>
         <p className="mt-3 max-w-sm text-pretty text-muted-foreground">
-          Your message has been received. A member of our team will be in touch shortly. (This is a
-          demo submission — connect a backend to start receiving enquiries.)
+Thank you for contacting Foundr Developments. Your enquiry has been submitted successfully, and a member of our team will be in touch shortly.
         </p>
         <button
           type="button"
@@ -78,11 +118,17 @@ export function ContactForm() {
         </Field>
       </div>
 
+      {submitError && (
+  <p role="alert" className="mb-4 text-sm text-red-600">
+    {submitError}
+  </p>
+)}
       <button
         type="submit"
+        disabled={submitting}
         className="group mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-8 py-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-accent"
       >
-        Send message
+     {submitting ? "Sending..." : "Send message"}
         <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
       </button>
     </form>
